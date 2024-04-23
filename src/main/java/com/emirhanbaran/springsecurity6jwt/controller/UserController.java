@@ -21,7 +21,7 @@ public class UserController {
 
     @PostMapping("/register")
     @Operation(summary = "Apı for register as a user")
-    public ResponseEntity<?> register (@RequestBody RegisterDto registerDto)
+    public ResponseEntity<Object> register (@RequestBody RegisterDto registerDto)
     { return  userService.register(registerDto);}
 
     @PostMapping("/authenticate")

@@ -13,10 +13,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -30,7 +27,7 @@ public class JwtService {
     @Value("${jwt.expiration.ms}")
     private Long expiration;
 
-    public String generateToken(String username,  List<String> roles) {
+    public String generateToken(String username,  Set<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)

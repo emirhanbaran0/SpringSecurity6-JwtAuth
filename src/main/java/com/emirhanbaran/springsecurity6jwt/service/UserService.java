@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class UserService {
     }
 
 
-    public ResponseEntity<?> register(RegisterDto registerDto) {
+    public ResponseEntity<Object> register(RegisterDto registerDto) {
         if(userRepository.existsByUsername(registerDto.username()))
         { return  new ResponseEntity<>("email is already taken !", HttpStatus.SEE_OTHER); }
         else
@@ -46,15 +47,17 @@ public class UserService {
             user.setEmail(registerDto.email());
             user.setPassword(passwordEncoder.encode(registerDto.password()));
             user.setUsername(registerDto.username());
-            //By Default , our client is a simple user
-            Role role = roleRepository.findByRoleName(RoleName.USER);
-            user.setRoles(Collections.singletonList(role));
+            Role adminRole = roleRepository.findByRoleName(RoleName.ROLE_ADMIN);
+            Role userRole = roleRepository.findByRoleName(RoleName.ROLE_USER);
+            Set<Role> roles = new HashSet<>(Arrays.asList(adminRole,userRole));
+            user.setRoles(roles);
+
             try {
                 userRepository.save(user);
             }catch (Exception e){
                 e.printStackTrace();
             }
-            String token = jwtService.generateToken(registerDto.username(),Collections.singletonList(role.getRoleName()));
+            String token = jwtService.generateToken(registerDto.username(),roles.stream().map(Role::getRoleName).collect(Collectors.toSet()));
             return new ResponseEntity<>(new BearerToken(token , "Bearer "),HttpStatus.OK);
 
         }
@@ -69,7 +72,7 @@ public class UserService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         User user = userRepository.findByUsername(authentication.getName());
-        List<String> rolesNames = new ArrayList<>();
+        Set<String> rolesNames = new HashSet<>();
         user.getRoles().forEach(r-> rolesNames.add(r.getRoleName()));
         return jwtService.generateToken(user.getUsername(),rolesNames);
     }
