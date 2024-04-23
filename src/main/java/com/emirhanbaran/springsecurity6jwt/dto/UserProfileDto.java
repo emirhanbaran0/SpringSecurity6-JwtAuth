@@ -1,10 +1,13 @@
 package com.emirhanbaran.springsecurity6jwt.dto;
 
+import lombok.AllArgsConstructor;
 
-public record RegisterDto(
-        String email,
+
+public record UserProfileDto(
         String username,
-        String password,
+        String email,
         Short age,
         Boolean gender
-) {}
+
+) {
+}

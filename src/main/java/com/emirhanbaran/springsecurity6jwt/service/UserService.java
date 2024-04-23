@@ -3,12 +3,14 @@ package com.emirhanbaran.springsecurity6jwt.service;
 import com.emirhanbaran.springsecurity6jwt.dto.BearerToken;
 import com.emirhanbaran.springsecurity6jwt.dto.LoginDto;
 import com.emirhanbaran.springsecurity6jwt.dto.RegisterDto;
+import com.emirhanbaran.springsecurity6jwt.dto.UserProfileDto;
 import com.emirhanbaran.springsecurity6jwt.entity.Role;
 import com.emirhanbaran.springsecurity6jwt.entity.RoleName;
 import com.emirhanbaran.springsecurity6jwt.entity.User;
 import com.emirhanbaran.springsecurity6jwt.repository.RoleRepository;
 import com.emirhanbaran.springsecurity6jwt.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.ObjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,6 +49,8 @@ public class UserService {
             user.setEmail(registerDto.email());
             user.setPassword(passwordEncoder.encode(registerDto.password()));
             user.setUsername(registerDto.username());
+            user.setAge(registerDto.age());
+            user.setGender(registerDto.gender());
             Role adminRole = roleRepository.findByRoleName(RoleName.ROLE_ADMIN);
             Role userRole = roleRepository.findByRoleName(RoleName.ROLE_USER);
             Set<Role> roles = new HashSet<>(Arrays.asList(adminRole,userRole));
@@ -57,7 +61,7 @@ public class UserService {
             }catch (Exception e){
                 e.printStackTrace();
             }
-            String token = jwtService.generateToken(registerDto.username(),roles.stream().map(Role::getRoleName).collect(Collectors.toSet()));
+            String token = jwtService.generateToken(registerDto.username(),roles.stream().map(Role::getRoleName).collect(Collectors.toSet()),user.getId());
             return new ResponseEntity<>(new BearerToken(token , "Bearer "),HttpStatus.OK);
 
         }
@@ -74,7 +78,14 @@ public class UserService {
         User user = userRepository.findByUsername(authentication.getName());
         Set<String> rolesNames = new HashSet<>();
         user.getRoles().forEach(r-> rolesNames.add(r.getRoleName()));
-        return jwtService.generateToken(user.getUsername(),rolesNames);
+        return jwtService.generateToken(user.getUsername(),rolesNames,user.getId());
     }
 
+
+    public UserProfileDto getProfileInfo(Long id) {
+        User user=userRepository.findById(id).orElseThrow(
+                ()->new ObjectNotFoundException("User not found with id: {}",id)
+        );
+        return new UserProfileDto(user.getUsername(),user.getEmail(),user.getAge(),user.getGender());
+    }
 }

@@ -33,7 +33,7 @@ public class SecurityConfig {
         return  httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(x->x.requestMatchers("/user/**","/swagger/**", "/v3/api-docs/**").permitAll())
+                .authorizeHttpRequests(x->x.requestMatchers("/user/authenticate","/user/register","/swagger/**", "/v3/api-docs/**").permitAll())
                 .authorizeHttpRequests(x->x.anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

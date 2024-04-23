@@ -1,13 +1,18 @@
 package com.emirhanbaran.springsecurity6jwt.service;
 
 
+import com.emirhanbaran.springsecurity6jwt.config.EncryptionManager;
 import com.emirhanbaran.springsecurity6jwt.messages.InvalidTokenMessages;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -18,8 +23,10 @@ import java.util.function.Function;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class JwtService {
 
+    private final EncryptionManager encryptionManager;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -27,10 +34,14 @@ public class JwtService {
     @Value("${jwt.expiration.ms}")
     private Long expiration;
 
-    public String generateToken(String username,  Set<String> roles) {
+    public String generateToken(String username,  Set<String> roles,Long userId) {
+        if (userId != null && userId > 0) {
+
+        }
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
+                .claim("ticket", encryptionManager.encrypt(String.valueOf(userId)))
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(expiration, ChronoUnit.MILLIS)))
                 .signWith(getKey())
@@ -70,6 +81,20 @@ public class JwtService {
     private SecretKey getKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String extractTicket(String token) {
+
+        Claims claims = extractAllClaims(token);
+        return claims.get("ticket", String.class);
+    }
+
+    public String extractJwt(HttpServletRequest request) {
+        String data = request.getHeader("Authorization");
+        if (StringUtils.hasText(data) && data.startsWith("Bearer ")) {
+            return data.substring(7);
+        }
+        return null;
     }
 
     public boolean validateToken(String token) {
