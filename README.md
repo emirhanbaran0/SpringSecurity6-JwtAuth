@@ -40,5 +40,10 @@ mvn spring-boot:run
 Accessing Swagger UI
 Once the application is running, visit Swagger UI to interact with the API.
 
+## Security Enhancements
+
+### Prevention of IDOR (Insecure Direct Object References) Attacks
+In the latest update(v3), we have introduced robust mechanisms to prevent IDOR attacks. IDOR vulnerabilities allow attackers to access unauthorized data by modifying direct object references used in requests. To mitigate this risk, we have implemented additional checks to validate that the authenticated user has the necessary permissions to access the requested resources.
+
 ### Contributing
 * Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change.
