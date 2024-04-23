@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String email;
 
     private Short age;
-    private Boolean gender; //1: male 0:female
+    private Gender gender;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
