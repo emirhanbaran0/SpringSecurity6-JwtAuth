@@ -30,6 +30,7 @@ public class User implements UserDetails {
     private String email;
 
     private Short age;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @ManyToMany(fetch = FetchType.EAGER)
